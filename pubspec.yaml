@@ -49,10 +49,24 @@ dependencies:
   location: ^7.0.0
   google_maps_flutter: ^2.7.0
   geocoding: ^3.0.0
+  custom_map_markers: ^0.0.1
+  http: ^1.2.1
+  razorpay_web: ^1.4.2
+  fluttertoast: ^8.2.6
+
+
 
 dev_dependencies:
   flutter_test:
     sdk: flutter
+flutter_launcher_icons: ^0.9.2
+
+flutter_icons:
+  android: true
+  ios: true
+  image_path: "assets/images/dinner.png" # Adjust path to your app icon
+  android_disable_legacy: false
+  ios_disable_legacy: false
 
   # The "flutter_lints" package below contains a set of recommended lints to
   # encourage good coding practices. The lint set provided by the package is

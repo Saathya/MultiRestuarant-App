@@ -1,12 +1,14 @@
 import 'package:flutter/material.dart';
+import 'package:multi_restaurant_app/screens/booking/booking.dart';
 import 'package:multi_restaurant_app/screens/home.dart';
 import 'package:multi_restaurant_app/screens/profile/profilepage.dart';
+import 'package:multi_restaurant_app/show_nearby.dart';
 
 class MainHomePage extends StatefulWidget {
   const MainHomePage({super.key});
 
   @override
-  _MainHomePageState createState() => _MainHomePageState();
+  State<MainHomePage> createState() => _MainHomePageState();
 }
 
 class _MainHomePageState extends State<MainHomePage> {
@@ -14,8 +16,8 @@ class _MainHomePageState extends State<MainHomePage> {
 
   static final List<Widget> _widgetOptions = <Widget>[
     const MapScreen(),
-    Container(),
-    Container(),
+    const BookingListScreen(),
+    const ShowNearbyRestaurants(),
     const ProfilePage(),
   ];
 
@@ -41,8 +43,8 @@ class _MainHomePageState extends State<MainHomePage> {
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
               _buildNavBarItem(Icons.home_filled, 'Home', 0),
-              _buildNavBarItem(Icons.message_outlined, 'Chat', 1),
-              _buildNavBarItem(Icons.account_balance_wallet, 'Wallet', 2),
+              _buildNavBarItem(Icons.book, 'Booking', 1),
+              _buildNavBarItem(Icons.restaurant, 'NearBY', 2),
               _buildNavBarItem(Icons.person, 'Profile', 3),
             ],
           ),
@@ -61,17 +63,13 @@ class _MainHomePageState extends State<MainHomePage> {
         children: [
           Icon(
             icon,
-            color: _selectedIndex == index
-                ? const Color(0xff2A977D)
-                : Colors.black,
+            color: _selectedIndex == index ? Colors.red : Colors.black,
           ),
           const SizedBox(height: 3),
           Text(
             label,
             style: TextStyle(
-              color: _selectedIndex == index
-                  ? const Color(0xff2A977D)
-                  : Colors.black,
+              color: _selectedIndex == index ? Colors.red : Colors.black,
             ),
           ),
         ],

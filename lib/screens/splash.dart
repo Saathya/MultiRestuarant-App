@@ -15,7 +15,7 @@ class SplashScreen extends StatelessWidget {
       splash: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          LottieBuilder.asset('assets/images/Animation - 1719381956762.json'),
+          LottieBuilder.asset('assets/images/Animation - 1720508864321.json',height:250),
           const SizedBox(
               height: 20), // Add space between the animation and text
           const Text(

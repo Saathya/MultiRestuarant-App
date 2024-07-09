@@ -1,7 +1,10 @@
+// ignore_for_file: avoid_print, use_build_context_synchronously
+
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_easyloading/flutter_easyloading.dart';
 import 'package:google_sign_in/google_sign_in.dart';
 import 'package:multi_restaurant_app/screens/mainpage/mainhomepage.dart';
 
@@ -31,8 +34,8 @@ class Menu extends StatelessWidget {
   Widget build(BuildContext context) {
     return Container(
       color: Colors.white,
-      child: Padding(
-        padding: const EdgeInsets.symmetric(vertical: 30),
+      child: const Padding(
+        padding: EdgeInsets.symmetric(vertical: 30),
         child: Row(
           mainAxisAlignment: MainAxisAlignment.start,
           children: [],
@@ -46,7 +49,7 @@ class Body extends StatefulWidget {
   const Body({super.key});
 
   @override
-  _BodyState createState() => _BodyState();
+  State<Body> createState() => _BodyState();
 }
 
 class _BodyState extends State<Body> {
@@ -162,6 +165,10 @@ class _BodyState extends State<Body> {
 
     Future<User?> signInWithGoogle() async {
       try {
+        EasyLoading.show(
+            status: 'Signing in with Google...',
+            maskType: EasyLoadingMaskType.black);
+
         final GoogleSignInAccount? googleSignInAccount =
             await GoogleSignIn().signIn();
 
@@ -194,12 +201,17 @@ class _BodyState extends State<Body> {
                 'photoURL': user.photoURL,
               });
             }
+            EasyLoading.dismiss();
 
             return user;
           }
         }
+        EasyLoading.dismiss();
+
         return null;
       } catch (e) {
+        EasyLoading.dismiss();
+
         if (kDebugMode) {
           print("Error signing in with Google: $e");
         }
@@ -539,6 +551,8 @@ class _BodyState extends State<Body> {
       String email, String password, BuildContext context) async {
     try {
       // Check if the email already exists in Firebase Auth
+      EasyLoading.show(
+          status: 'Signing in...', maskType: EasyLoadingMaskType.black);
 
       // Email is registered with Firebase Auth
       UserCredential userCredential =
@@ -549,10 +563,12 @@ class _BodyState extends State<Body> {
 
       User? user = userCredential.user;
 
+
       if (user != null) {
         print(user);
 
         // User signed in successfully, navigate to UserMainPage
+          EasyLoading.dismiss();
 
         Navigator.pushReplacement(
           context,
@@ -565,8 +581,11 @@ class _BodyState extends State<Body> {
             content: Text('Email is not registered. Please sign up.'),
           ),
         );
+        EasyLoading.dismiss();
       }
     } catch (e) {
+      EasyLoading.dismiss();
+
       if (kDebugMode) {
         print("Error signing in: $e");
       }
@@ -588,6 +607,9 @@ class _BodyState extends State<Body> {
     }
 
     try {
+      EasyLoading.show(
+          status: 'Signing up...', maskType: EasyLoadingMaskType.black);
+
       // Check if the email already exists in the users collection
       QuerySnapshot snapshot = await FirebaseFirestore.instance
           .collection('users')
@@ -626,6 +648,8 @@ class _BodyState extends State<Body> {
 
           print(user);
 
+          EasyLoading.dismiss();
+
           // User signed up successfully, navigate to UserMainPage
           Navigator.pushReplacement(
             context,
@@ -639,8 +663,11 @@ class _BodyState extends State<Body> {
             content: Text('Email already registered. Please sign in.'),
           ),
         );
+        EasyLoading.dismiss();
       }
     } catch (e) {
+      EasyLoading.dismiss();
+
       if (kDebugMode) {
         print("Error signing up: $e");
       }

@@ -31,12 +31,12 @@ A multi-restaurant booking application developed with Flutter and Firebase. This
 - Once the project is created, add an Android app and a Web app.
 
 3. **Enable Authentication Providers**  
-- In the Firebase Console, navigate to the Authentication menu.
+- In the Firebase Console, Navigate to the authentication menu.
 - Click on the Sign-in method tab.
 - Enable Google and Email/Password providers.
 
 4. **Set Up Firestore Database**
-- In the Firebase Console, navigate to Firestore Database.
+- In the Firebase Console, Navigate to the Firestore Database.
 - Click on Create Database and follow the setup instructions.
 
 5. **Configure Firebase in Flutter Project**
@@ -62,6 +62,7 @@ const firebaseConfig = {
 - Navigate to your project and enable the Maps SDK for Android.
 - Generate an API key and restrict it as needed.
 - Add the API key to your AndroidManifest.xml file inside the <application> tag.
+  
 ```sh
 android/app/src/main/AndroidManifest.xml
 

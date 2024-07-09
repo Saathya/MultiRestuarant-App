@@ -25,20 +25,17 @@ A multi-restaurant booking application developed with Flutter and Firebase. This
    git clone https://github.com/yourusername/multi-restaurant-app.git
    cd multi-restaurant-app
 
-  2. **Create Firebase Project**
-
-  - Go to the Firebase Console.
+2. **Create Firebase Project**
+- Go to the Firebase Console.
 - Click on Add Project and follow the setup instructions.
 - Once the project is created, add an Android app and a Web app.
 
-3. **Enable Authentication Providers**
-
+3. **Enable Authentication Providers**  
 - In the Firebase Console, navigate to the Authentication menu.
 - Click on the Sign-in method tab.
 - Enable Google and Email/Password providers.
 
-4 . **Set Up Firestore Database**
-
+4. **Set Up Firestore Database**
 - In the Firebase Console, navigate to Firestore Database.
 - Click on Create Database and follow the setup instructions.
 
@@ -98,7 +95,7 @@ const razorpayApiKey = "YOUR_RAZORPAY_API_KEY";
 
 
 
-9 **Run the Application**
+9. **Run the Application**
 
 - Connect your device or start an emulator.
 - Run the app using the command:

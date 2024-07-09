@@ -120,7 +120,7 @@ class _ProfilePageState extends State<ProfilePage> {
 
             Text(
               displayName ?? '',
-              style: const TextStyle(fontSize: 18),
+              style: const TextStyle(fontSize: 18,color:Colors.black),
             ),
             const SizedBox(height: 8),
 

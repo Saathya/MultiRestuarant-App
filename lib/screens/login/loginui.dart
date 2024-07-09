@@ -5,7 +5,10 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_easyloading/flutter_easyloading.dart';
+import 'package:geocoding/geocoding.dart';
+import 'package:geocoding/geocoding.dart';
 import 'package:google_sign_in/google_sign_in.dart';
+import 'package:location/location.dart' as loc;
 import 'package:multi_restaurant_app/screens/mainpage/mainhomepage.dart';
 
 class LoginUI extends StatelessWidget {
@@ -158,10 +161,30 @@ class _BodyState extends State<Body> {
     );
   }
 
-  Widget _formLogin(context) {
-    // final double screenWidth = MediaQuery.of(context).size.width;
+  Widget _formLogin(BuildContext context) {
     TextEditingController emailController = TextEditingController();
     TextEditingController passwordController = TextEditingController();
+
+    final loc.Location _location = loc.Location();
+
+    User? user = FirebaseAuth.instance.currentUser;
+    String? displayName;
+    String? email;
+    String? photoURL;
+    String? city;
+    String? country;
+
+    Future<loc.LocationData> _getLocation() async {
+      try {
+        return await _location.getLocation();
+      } catch (e) {
+        print("Error getting location: $e");
+        return loc.LocationData.fromMap({
+          "latitude": 0.0,
+          "longitude": 0.0,
+        });
+      }
+    }
 
     Future<User?> signInWithGoogle() async {
       try {
@@ -185,33 +208,50 @@ class _BodyState extends State<Body> {
           User? user = authResult.user;
 
           if (user != null) {
-            DocumentSnapshot documentSnapshot = await FirebaseFirestore.instance
-                .collection('users')
-                .doc(user.uid)
-                .get();
+            loc.LocationData currentLocation = await _getLocation();
+            if (currentLocation.latitude != null &&
+                currentLocation.longitude != null) {
+              List<Placemark> placemarks = await placemarkFromCoordinates(
+                  currentLocation.latitude!, currentLocation.longitude!);
 
-            if (!documentSnapshot.exists) {
-              await FirebaseFirestore.instance
-                  .collection('users')
-                  .doc(user.uid)
-                  .set({
-                'uid': user.uid,
-                'email': user.email,
-                'displayName': user.displayName,
-                'photoURL': user.photoURL,
-              });
+              if (placemarks.isNotEmpty) {
+                Placemark placemark = placemarks.first;
+                String country = placemark.country ?? 'Unknown';
+                String city = placemark.locality ?? 'Unknown';
+
+                DocumentSnapshot documentSnapshot = await FirebaseFirestore
+                    .instance
+                    .collection('users')
+                    .doc(user.uid)
+                    .get();
+
+                if (!documentSnapshot.exists) {
+                  await FirebaseFirestore.instance
+                      .collection('users')
+                      .doc(user.uid)
+                      .set({
+                    'uid': user.uid,
+                    'email': user.email,
+                    'displayName': user.displayName,
+                    'photoURL': user.photoURL,
+                    'country': country,
+                    'city': city,
+                    'latitude': currentLocation.latitude,
+                    'longitude': currentLocation.longitude,
+                  });
+                }
+              }
             }
-            EasyLoading.dismiss();
 
+            EasyLoading.dismiss();
             return user;
           }
         }
-        EasyLoading.dismiss();
 
+        EasyLoading.dismiss();
         return null;
       } catch (e) {
         EasyLoading.dismiss();
-
         if (kDebugMode) {
           print("Error signing in with Google: $e");
         }
@@ -563,12 +603,11 @@ class _BodyState extends State<Body> {
 
       User? user = userCredential.user;
 
-
       if (user != null) {
         print(user);
 
         // User signed in successfully, navigate to UserMainPage
-          EasyLoading.dismiss();
+        EasyLoading.dismiss();
 
         Navigator.pushReplacement(
           context,
@@ -606,6 +645,20 @@ class _BodyState extends State<Body> {
       return;
     }
 
+    final loc.Location _location = loc.Location();
+
+    Future<loc.LocationData> _getLocation() async {
+      try {
+        return await _location.getLocation();
+      } catch (e) {
+        print("Error getting location: $e");
+        return loc.LocationData.fromMap({
+          "latitude": 0.0,
+          "longitude": 0.0,
+        });
+      }
+    }
+
     try {
       EasyLoading.show(
           status: 'Signing up...', maskType: EasyLoadingMaskType.black);
@@ -634,27 +687,45 @@ class _BodyState extends State<Body> {
         User? user = userCredential.user;
 
         if (user != null) {
-          // Add user data to Firestore users collection
-          await FirebaseFirestore.instance
-              .collection('users')
-              .doc(user.uid)
-              .set({
-            'uid': user.uid,
-            'email': user.email,
-            'displayName': name,
-            'photoURL': user.photoURL ??
-                'https://img.freepik.com/free-psd/3d-illustration-person-with-sunglasses_23-2149436188.jpg?w=2000',
-          });
+          // Get user's location
+          loc.LocationData currentLocation = await _getLocation();
+          if (currentLocation.latitude != null &&
+              currentLocation.longitude != null) {
+            List<Placemark> placemarks = await placemarkFromCoordinates(
+                currentLocation.latitude!, currentLocation.longitude!);
 
-          print(user);
+            if (placemarks.isNotEmpty) {
+              Placemark placemark = placemarks.first;
+              String country = placemark.country ?? 'Unknown';
+              String city = placemark.locality ?? 'Unknown';
 
-          EasyLoading.dismiss();
+              // Add user data to Firestore users collection
+              await FirebaseFirestore.instance
+                  .collection('users')
+                  .doc(user.uid)
+                  .set({
+                'uid': user.uid,
+                'email': user.email,
+                'displayName': name,
+                'photoURL': user.photoURL ??
+                    'https://img.freepik.com/free-psd/3d-illustration-person-with-sunglasses_23-2149436188.jpg?w=2000',
+                'country': country,
+                'city': city,
+                'latitude': currentLocation.latitude,
+                'longitude': currentLocation.longitude,
+              });
 
-          // User signed up successfully, navigate to UserMainPage
-          Navigator.pushReplacement(
-            context,
-            MaterialPageRoute(builder: (context) => const MainHomePage()),
-          );
+              print(user);
+
+              EasyLoading.dismiss();
+
+              // User signed up successfully, navigate to UserMainPage
+              Navigator.pushReplacement(
+                context,
+                MaterialPageRoute(builder: (context) => const MainHomePage()),
+              );
+            }
+          }
         }
       } else {
         // Email already exists in Firestore users collection, show error message

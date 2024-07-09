@@ -12,15 +12,21 @@ class BookingListScreen extends StatefulWidget {
 }
 
 class _BookingListScreenState extends State<BookingListScreen> {
+  List<Booking> bookings = [];
+  bool isLoading = false;
+
   @override
   void initState() {
     super.initState();
     fetchBookings();
   }
 
-  Future<List<Booking>> fetchBookings() async {
-    String currentUserUid = FirebaseAuth
-        .instance.currentUser!.uid; // Replace with your actual current user ID
+  Future<void> fetchBookings() async {
+    setState(() {
+      isLoading = true;
+    });
+
+    String currentUserUid = FirebaseAuth.instance.currentUser!.uid;
 
     try {
       QuerySnapshot querySnapshot = await FirebaseFirestore.instance
@@ -28,18 +34,22 @@ class _BookingListScreenState extends State<BookingListScreen> {
           .where('userId', isEqualTo: currentUserUid)
           .get();
 
-      List<Booking> bookings = querySnapshot.docs.map((doc) {
+      List<Booking> fetchedBookings = querySnapshot.docs.map((doc) {
         Map<String, dynamic> data = doc.data() as Map<String, dynamic>;
-        return Booking.fromMap(
-            data); // Convert each document to a Booking object
+        return Booking.fromMap(data);
       }).toList();
 
-      print(bookings);
+      setState(() {
+        bookings = fetchedBookings;
+        isLoading = false;
+      });
 
-      return bookings;
+      print(bookings);
     } catch (e) {
       print('Error fetching bookings: $e');
-      return []; // Return an empty list or handle the error as needed
+      setState(() {
+        isLoading = false;
+      });
     }
   }
 
@@ -52,109 +62,100 @@ class _BookingListScreenState extends State<BookingListScreen> {
         elevation: 0,
         title: const Text('Your Bookings'),
       ),
-      body: FutureBuilder<List<Booking>>(
-        future: fetchBookings(),
-        builder: (context, snapshot) {
-          if (snapshot.connectionState == ConnectionState.waiting) {
-            return const Center(child: CircularProgressIndicator());
-          } else if (snapshot.hasError) {
-            return Center(child: Text('Error: ${snapshot.error}'));
-          } else if (!snapshot.hasData || snapshot.data!.isEmpty) {
-            return const Center(child: Text('No Bookings Found.'));
-          } else {
-            List<Booking> bookings = snapshot.data!;
-            return ListView.builder(
-              itemCount: bookings.length,
-              itemBuilder: (context, index) {
-                Booking booking = bookings[index];
-                return Container(
-                  color: Colors.white,
-                  padding: const EdgeInsets.symmetric(
-                    vertical: 16.0,
-                    horizontal: 8.0,
-                  ),
-                  child: Row(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      // Image Section
-                      ClipRRect(
-                        borderRadius: BorderRadius.circular(8.0),
-                        child: Image.network(
-                          booking.restaurantImage,
-                          width: 100,
-                          height: 100,
-                          fit: BoxFit.cover,
-                        ),
-                      ),
-                      const SizedBox(width: 16),
-
-                      // Details Section
-                      Expanded(
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            // Restaurant Name Section
-                            Text(
-                              booking.restaurantName,
-                              style: const TextStyle(
-                                fontWeight: FontWeight.bold,
-                                fontSize: 18,
+      body: isLoading
+          ? const Center(child: CircularProgressIndicator())
+          : RefreshIndicator(
+              onRefresh: fetchBookings,
+              child: bookings.isEmpty
+                  ? const Center(child: Text('No Bookings Found.'))
+                  : ListView.builder(
+                      itemCount: bookings.length,
+                      itemBuilder: (context, index) {
+                        Booking booking = bookings[index];
+                        return Container(
+                          color: Colors.white,
+                          padding: const EdgeInsets.symmetric(
+                            vertical: 16.0,
+                            horizontal: 8.0,
+                          ),
+                          child: Row(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              // Image Section
+                              ClipRRect(
+                                borderRadius: BorderRadius.circular(8.0),
+                                child: Image.network(
+                                  booking.restaurantImage,
+                                  width: 100,
+                                  height: 100,
+                                  fit: BoxFit.cover,
+                                ),
                               ),
-                            ),
-                            const SizedBox(height: 4),
+                              const SizedBox(width: 16),
 
-                            // Table Number Section
-                            Text(
-                              booking.table,
-                              style: const TextStyle(
-                                  fontSize: 16,
-                                  color: Colors.red,
-                                  fontWeight: FontWeight.w600),
-                            ),
+                              // Details Section
+                              Expanded(
+                                child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    // Restaurant Name Section
+                                    Text(
+                                      booking.restaurantName,
+                                      style: const TextStyle(
+                                        fontWeight: FontWeight.bold,
+                                        fontSize: 18,
+                                      ),
+                                    ),
+                                    const SizedBox(height: 4),
 
-                            const SizedBox(height: 6),
+                                    // Table Number Section
+                                    Text(
+                                      booking.table,
+                                      style: const TextStyle(
+                                          fontSize: 16,
+                                          color: Colors.red,
+                                          fontWeight: FontWeight.w600),
+                                    ),
+                                    const SizedBox(height: 6),
 
-                            // Total Amount Section
-                            Row(
-                              children: [
-                                Text(
-                                  '₹ ${booking.totalAmount.toString()}',
-                                  style: const TextStyle(
-                                    fontSize: 15,
-                                    color: Colors.green,
-                                  ),
+                                    // Total Amount Section
+                                    Row(
+                                      children: [
+                                        Text(
+                                          '₹ ${booking.totalAmount.toString()}',
+                                          style: const TextStyle(
+                                            fontSize: 15,
+                                            color: Colors.green,
+                                          ),
+                                        ),
+                                      ],
+                                    ),
+                                    const SizedBox(height: 8),
+
+                                    // Number of Persons Section
+                                    Row(
+                                      mainAxisAlignment: MainAxisAlignment.end,
+                                      children: [
+                                        const Icon(Icons.people),
+                                        const SizedBox(width: 4),
+                                        Text(
+                                          ' ${booking.numberOfPersons} Persons',
+                                          style: const TextStyle(
+                                            fontSize: 14,
+                                            color: Colors.black,
+                                          ),
+                                        ),
+                                      ],
+                                    ),
+                                  ],
                                 ),
-                              ],
-                            ),
-
-                            const SizedBox(height: 8),
-
-                            // Number of Persons Section
-                            Row(
-                              mainAxisAlignment: MainAxisAlignment.end,
-                              children: [
-                                const Icon(Icons.people),
-                                const SizedBox(width: 4),
-                                Text(
-                                  ' ${booking.numberOfPersons} Persons',
-                                  style: const TextStyle(
-                                    fontSize: 14,
-                                    color: Colors.black,
-                                  ),
-                                ),
-                              ],
-                            ),
-                          ],
-                        ),
-                      ),
-                    ],
-                  ),
-                );
-              },
-            );
-          }
-        },
-      ),
+                              ),
+                            ],
+                          ),
+                        );
+                      },
+                    ),
+            ),
     );
   }
 }

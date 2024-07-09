@@ -7,6 +7,8 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter_easyloading/flutter_easyloading.dart';
 import 'package:multi_restaurant_app/model/nearby_restaurant_model.dart';
 import 'package:multi_restaurant_app/screens/payment/rpayment.dart';
+import 'package:multi_restaurant_app/screens/mainpage/mainhomepage.dart';
+
 
 class CartScreen extends StatefulWidget {
   final Restaurant selectedRestaurant;
@@ -153,8 +155,8 @@ class _CartScreenState extends State<CartScreen> {
                 child: const Text('OK'),
                 onPressed: () {
                   Navigator.of(context).pop(); // Close the dialog
-                  Navigator.of(context).pop(); // Pop the BookingPage
-                },
+ Navigator.pushReplacement(context,
+                MaterialPageRoute(builder: (context) => const MainHomePage()));                },
               ),
             ],
           );
